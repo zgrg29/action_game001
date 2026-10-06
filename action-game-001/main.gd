@@ -80,14 +80,18 @@ func _unhandled_input(event: InputEvent) -> void:
 			elif paused:
 				paused = false
 				queue_redraw()
-			elif phase in ["gameover", "victory"]:
+			elif phase == "victory":
+				return_to_title_after_victory()
+			elif phase == "gameover":
 				start_game()
 			elif phase == "store":
 				phase = "title"
 			elif phase == "title":
 				phase = "store"
-		elif event.keycode in [KEY_SPACE, KEY_ENTER] and phase in ["title", "victory"]:
+		elif event.keycode in [KEY_SPACE, KEY_ENTER] and phase == "title":
 			start_game()
+		elif event.keycode in [KEY_ENTER, KEY_SPACE] and phase == "victory":
+			return_to_title_after_victory()
 		elif phase == "gameover" and event.keycode in [KEY_1, KEY_2]:
 			if event.keycode == KEY_1: return_to_hangar()
 			else: retry_checkpoint()
@@ -478,6 +482,12 @@ func return_to_hangar() -> void:
 	phase = "title"
 	paused = false
 
+func return_to_title_after_victory() -> void:
+	if phase != "victory": return
+	hangar_notice = "任务完成 · 奖励 %d 余烬已存入机库" % run_reward
+	phase = "title"
+	paused = false
+
 func retry_checkpoint() -> void:
 	if phase != "gameover" or checkpoint.is_empty(): return
 	reward_claimed = false
@@ -818,7 +828,7 @@ func _draw_end(won: bool) -> void:
 	_draw_text("最终得分  %07d" % score, Vector2(180, 300), 22, Color("fff0bb"), HORIZONTAL_ALIGNMENT_CENTER, 600)
 	if won:
 		_draw_text("任务奖励 +%d 余烬 · 已存入机库" % run_reward, Vector2(180, 350), 17, Color("ffcf72"), HORIZONTAL_ALIGNMENT_CENTER, 600)
-		_draw_text("按 Enter / Space 开始新任务", Vector2(180, 397), 18, Color("ffcf72"), HORIZONTAL_ALIGNMENT_CENTER, 600)
+		_draw_text("按 Enter / Space / Esc 返回标题画面", Vector2(180, 397), 16, Color("ffcf72"), HORIZONTAL_ALIGNMENT_CENTER, 600)
 	else:
 		_draw_text("任务奖励 +%d 余烬 · 选择去向" % run_reward, Vector2(180, 343), 17, Color("ffcf72"), HORIZONTAL_ALIGNMENT_CENTER, 600)
 		_draw_text("[ 1 ] 返回机库并领取奖励      [ 2 ] 从本航段检查点重试", Vector2(180, 397), 15, Color("ffcf72"), HORIZONTAL_ALIGNMENT_CENTER, 600)
